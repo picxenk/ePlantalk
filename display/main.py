@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 GRID_SIZE = 50
 SMALL_FONT_SIZE = 24
-WIFI_FONT_SIZE = 10
+LOG_FONT_SIZE = 10
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
 
 def load_config():
@@ -143,14 +143,14 @@ def main():
                 dummy_moisture += 1
                 dummy_light += 1
 
-            font = get_font(SMALL_FONT_SIZE)
+            font = get_font(LOG_FONT_SIZE)
             text = f"moisture: {final_moisture}, light: {final_light}"
             
             # Draw at top-left (10, 10)
             draw.text((10, 10), text, font=font, fill=0)
 
             # Draw WiFi SSID at top-right
-            wifi_font = get_font(WIFI_FONT_SIZE)
+            wifi_font = get_font(LOG_FONT_SIZE)
             
             # Calculate text size to align right
             bbox = draw.textbbox((0, 0), ssid, font=wifi_font)
