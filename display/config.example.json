@@ -1,0 +1,6 @@
+{
+  "sensor_ip": "192.168.4.1",
+  "target_ssid_prefix": "ePlantalk",
+  "update_interval": 7,
+  "plant_name": "My Plant"
+}
