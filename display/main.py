@@ -86,40 +86,39 @@ def main():
         width = display_width
         height = display_height
         
-        # --- 1. Draw Grid ---
-        print("Drawing Grid...")
-        # Create image with full hardware size, but draw within the configured area
-        # Actually, epd.width/height are hardware limits. 
-        # We should create a canvas of the *configured* size, 
-        # and then paste it onto the full hardware buffer at (x_offset, y_offset).
+        # --- 1. Draw Grid on Hardware Canvas ---
+        print("Drawing Grid on full hardware canvas...")
         
         full_width, full_height = epd.width, epd.height
         full_image = Image.new('1', (full_width, full_height), 255) # 255: White background
-        
-        # Create canvas for our active area
-        canvas = Image.new('1', (width, height), 255)
-        draw = ImageDraw.Draw(canvas)
-        
+        full_draw = ImageDraw.Draw(full_image)
+
+        # Draw grid on the full hardware area
         # Vertical lines
-        print(f"Drawing vertical lines (step: {GRID_SIZE})...")
-        for x in range(0, width, GRID_SIZE):
-            draw.line([(x, 0), (x, height)], fill=0, width=1)
+        for x in range(0, full_width, GRID_SIZE):
+            full_draw.line([(x, 0), (x, full_height)], fill=0, width=1)
             if x % (GRID_SIZE * 2) == 0:
                 font = get_font(12)
-                draw.text((x + 2, 2), str(x), font=font, fill=0)
+                full_draw.text((x + 2, 2), str(x), font=font, fill=0)
 
         # Horizontal lines
-        print(f"Drawing horizontal lines (step: {GRID_SIZE})...")
-        for y in range(0, height, GRID_SIZE):
-            draw.line([(0, y), (width, y)], fill=0, width=1)
+        for y in range(0, full_height, GRID_SIZE):
+            full_draw.line([(0, y), (full_width, y)], fill=0, width=1)
             if y % (GRID_SIZE * 2) == 0:
                 font = get_font(12)
-                draw.text((2, y + 2), str(y), font=font, fill=0)
+                full_draw.text((2, y + 2), str(y), font=font, fill=0)
         
-        # Paste canvas onto full image with offset
-        full_image.paste(canvas, (display_x_offset, display_y_offset))
-        
-        print("Sending buffer to display...")
+        # Draw thick border for the logical display area
+        print(f"Drawing logical area border: {display_width}x{display_height} at ({display_x_offset}, {display_y_offset})")
+        full_draw.rectangle(
+            [
+                (display_x_offset, display_y_offset), 
+                (display_x_offset + display_width - 1, display_y_offset + display_height - 1)
+            ], 
+            outline=0, 
+            width=3
+        )
+
         epd.display(epd.getbuffer(full_image))
         print("Grid displayed. Waiting 3 seconds...")
         time.sleep(3)
@@ -133,8 +132,11 @@ def main():
             # Re-init is good practice for long running loops to ensure wakeup
             if epd: epd.init() 
 
+            # Create full image (hardware size)
             full_image = Image.new('1', (full_width, full_height), 255)
-            canvas = Image.new('1', (width, height), 255)
+            
+            # Create canvas for logical area
+            canvas = Image.new('1', (display_width, display_height), 255)
             draw = ImageDraw.Draw(canvas)
 
             # Get WiFi SSID
