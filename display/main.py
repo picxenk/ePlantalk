@@ -68,6 +68,12 @@ def main():
     target_ssid_prefix = config.get('target_ssid_prefix', 'ePlantalk')
     update_interval = config.get('update_interval', 7)
     
+    # Display alignment configuration
+    display_x_offset = config.get('display_x_offset', 0)
+    display_y_offset = config.get('display_y_offset', 0)
+    display_width = config.get('display_width', 1360)
+    display_height = config.get('display_height', 480)
+
     epd = None
     try:
         epd = EPD()
@@ -75,12 +81,24 @@ def main():
         epd.init()
         # epd.Clear() # Removed to match test_blink.py behavior and avoid potential hang
 
-        width, height = epd.width, epd.height
+        # Use configured dimensions instead of hardware full size for drawing area
+        # width, height = epd.width, epd.height 
+        width = display_width
+        height = display_height
         
         # --- 1. Draw Grid ---
         print("Drawing Grid...")
-        image = Image.new('1', (width, height), 255)  # 255: White
-        draw = ImageDraw.Draw(image)
+        # Create image with full hardware size, but draw within the configured area
+        # Actually, epd.width/height are hardware limits. 
+        # We should create a canvas of the *configured* size, 
+        # and then paste it onto the full hardware buffer at (x_offset, y_offset).
+        
+        full_width, full_height = epd.width, epd.height
+        full_image = Image.new('1', (full_width, full_height), 255) # 255: White background
+        
+        # Create canvas for our active area
+        canvas = Image.new('1', (width, height), 255)
+        draw = ImageDraw.Draw(canvas)
         
         # Vertical lines
         print(f"Drawing vertical lines (step: {GRID_SIZE})...")
@@ -98,8 +116,11 @@ def main():
                 font = get_font(12)
                 draw.text((2, y + 2), str(y), font=font, fill=0)
         
+        # Paste canvas onto full image with offset
+        full_image.paste(canvas, (display_x_offset, display_y_offset))
+        
         print("Sending buffer to display...")
-        epd.display(epd.getbuffer(image))
+        epd.display(epd.getbuffer(full_image))
         print("Grid displayed. Waiting 3 seconds...")
         time.sleep(3)
 
@@ -112,8 +133,9 @@ def main():
             # Re-init is good practice for long running loops to ensure wakeup
             if epd: epd.init() 
 
-            image = Image.new('1', (width, height), 255)
-            draw = ImageDraw.Draw(image)
+            full_image = Image.new('1', (full_width, full_height), 255)
+            canvas = Image.new('1', (width, height), 255)
+            draw = ImageDraw.Draw(canvas)
 
             # Get WiFi SSID
             ssid = get_wifi_ssid()
@@ -161,7 +183,9 @@ def main():
             draw.text((x_pos, 10), ssid, font=wifi_font, fill=0)
             
             if epd:
-                epd.display(epd.getbuffer(image))
+                # Paste canvas onto full image
+                full_image.paste(canvas, (display_x_offset, display_y_offset))
+                epd.display(epd.getbuffer(full_image))
                 print(f"Status updated: {text} (SSID: {ssid}). Sleeping for {update_interval}s...")
                 # epd.sleep() # Avoid sleep for fast updates to prevent re-init overhead/flashing
             
