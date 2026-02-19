@@ -9,8 +9,8 @@
   "display_height": 480,
   "show_log_messages": true,
   "thresholds": {
-    "moisture_low": 1.2,
-    "moisture_high": 2.5,
+    "moisture_low": 0.3,
+    "moisture_high": 1.5,
     "light_bright": 1.5
   },
   "messages": {
