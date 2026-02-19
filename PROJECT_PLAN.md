@@ -159,17 +159,17 @@ graph BT
 
 ### Step 2: 식물 위성 만들기 (Real Sensor Node Setup)
 *목표: ESP32-C3 미니 보드를 사용하여 독자적인 WiFi 망(AP)을 생성하고 센서 데이터를 제공합니다.*
-- [ ] **ESPHome 설치 및 환경 구성**
-    - [ ] PC 또는 서버에 ESPHome 설치
-    - [ ] ESP32-C3 미니 보드 드라이버 확인 (CH34x 등)
-- [ ] **펌웨어 작성 (`plant_sensor.yaml`)**
-    - [ ] **보드 설정:** `board: esp32-c3-devkitm-1`
-    - [ ] **WiFi 설정 (AP Mode):**
-        - [ ] `ap:` 모드 활성화
-        - [ ] SSID: `ePlantalk-AP-01` (세트별 번호 부여)
-        - [ ] Password 설정 및 고정 IP (`192.168.4.1`)
-    - [ ] **센서 정의:** ADC(토양) 및 I2C(조도)
-    - [ ] **Web Server 활성화:** API 엔드포인트 노출
+- [x] **ESPHome 설치 및 환경 구성**
+    - [x] PC 또는 서버에 ESPHome 설치
+    - [x] ESP32-C3 미니 보드 드라이버 확인 (CH34x 등)
+- [x] **펌웨어 작성 (`plant_sensor.yaml`)**
+    - [x] **보드 설정:** `board: esp32-c3-devkitm-1`
+    - [x] **WiFi 설정 (AP Mode):**
+        - [x] `ap:` 모드 활성화
+        - [x] SSID: `ePlantalk-AP-01` (세트별 번호 부여)
+        - [x] Password 설정 및 고정 IP (`192.168.4.1`)
+    - [x] **센서 정의:** ADC(토양) 및 I2C(조도)
+    - [x] **Web Server 활성화:** API 엔드포인트 노출
 - [ ] **플래싱 및 하드웨어 테스트**
     - [ ] USB 연결 후 펌웨어 업로드
     - [ ] PC/폰으로 `ePlantalk-AP-01` 와이파이 접속 테스트
