@@ -21,6 +21,19 @@ logger:
 api:
   reboot_timeout: 0s
 
+# interval:
+#   - interval: 60s
+#     then:
+#       - lambda: |-
+#           wifi_sta_list_t station_list;
+#           if (esp_wifi_ap_get_sta_list(&station_list) == ESP_OK) {
+#             if (station_list.num == 0) {
+#               ESP_LOGW("ap_watchdog", "No clients connected. Restarting...");
+#               esp_restart();
+#             }
+#           }
+
+
 
 wifi:
   ap:
@@ -29,6 +42,7 @@ wifi:
     ap_timeout: 0s   # 항상 AP 유지
 
   power_save_mode: none
+  output_power: 17dB
 
   manual_ip:
     static_ip: 192.168.4.1
@@ -49,6 +63,10 @@ sensor:
     id: moisture_sensor
     attenuation: 12db
     update_interval: 5s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
 
   - platform: adc
     pin: GPIO1
@@ -56,6 +74,10 @@ sensor:
     id: light_sensor
     attenuation: 12db
     update_interval: 5s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
 
 # JSON 통합 엔드포인트
 # text_sensor:
