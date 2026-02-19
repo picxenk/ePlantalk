@@ -1,0 +1,61 @@
+substitutions:
+  devicename: "plant-node-01"
+  friendly_name: "Plant Node 01"
+
+esphome:
+  name: ${devicename}
+  platformio_options:
+    board_build.flash_mode: dio
+  
+  
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: arduino
+
+# Enable logging
+# logger:
+#   hardware_uart: USB_SERIAL_JTAG
+#   level: DEBUG
+
+# Enable Web Server (Port 80)
+web_server:
+  port: 80
+  version: 2
+  # include_internal: true
+  # id: web_server_id
+
+
+
+# Enable Captive Portal (for AP mode stability)
+# captive_portal:
+
+# Setup WiFi in Access Point (AP) Mode
+wifi:
+  power_save_mode: none
+  ap:
+    ssid: "ePlantalk01"
+    password: "12345678" # Temporarily disable security for testing
+    channel: 6
+    manual_ip:
+      static_ip: 192.168.4.1
+      gateway: 192.168.4.1
+      subnet: 255.255.255.0
+
+# Define Sensors
+sensor:
+  - platform: adc
+    pin: 3
+    name: "Soil Moisture Voltage"
+    id: moisture
+    update_interval: 1s
+    attenuation: 12db
+    filters:
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+    # Note: Capacitive sensors output voltage.
+    # Dry ~ 3.0V (High voltage)
+    # Wet ~ 1.2V (Low voltage)
+    # We will calibrate this later to percentage.
