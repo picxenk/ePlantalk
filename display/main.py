@@ -76,6 +76,8 @@ def main():
         time.sleep(3)
 
         # --- 2. Main Loop (Static Info) ---
+        moisture_val = 0
+        light_val = 0
         while True:
             print("Updating display with status info...")
             # Re-init is good practice for long running loops to ensure wakeup
@@ -85,17 +87,19 @@ def main():
             draw = ImageDraw.Draw(image)
 
             font = get_font(SMALL_FONT_SIZE)
-            text = "moisture: 0, light: 0"
+            text = f"moisture: {moisture_val}, light: {light_val}"
             
             # Draw at top-left (10, 10)
             draw.text((10, 10), text, font=font, fill=0)
             
             if epd:
                 epd.display(epd.getbuffer(image))
-                print("Status updated. Sleeping for 60s...")
-                epd.sleep()
+                print(f"Status updated: {text}. Sleeping for 7s...")
+                # epd.sleep() # Avoid sleep for fast updates to prevent re-init overhead/flashing
             
-            time.sleep(60)
+            moisture_val += 1
+            light_val += 1
+            time.sleep(7)
 
     except IOError as e:
         print(e)
