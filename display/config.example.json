@@ -7,5 +7,36 @@
   "display_y_offset": 0,
   "display_width": 1360,
   "display_height": 480,
-  "show_log_messages": true
+  "show_log_messages": true,
+  "thresholds": {
+    "moisture_low": 1.2,
+    "moisture_high": 2.5,
+    "light_bright": 1.5
+  },
+  "messages": {
+    "dry_dark": [
+      "목말라요... 그리고 너무 어두워요.",
+      "물도 없고 빛도 없고 시무룩..."
+    ],
+    "dry_bright": [
+      "햇살은 좋은데 목이 너무 말라요!",
+      "물 좀 주세요, 말라가고 있어요."
+    ],
+    "normal_dark": [
+      "수분은 적당한데 좀 어둡네요.",
+      "지금 자는 시간인가요?"
+    ],
+    "normal_bright": [
+      "아주 쾌적해요! 기분 최고!",
+      "광합성하기 딱 좋은 날이네요."
+    ],
+    "wet_dark": [
+      "축축하고 어두워요... 곰팡이 생길 것 같아요.",
+      "물은 그만 주셔도 돼요."
+    ],
+    "wet_bright": [
+      "물은 충분하고 햇빛도 좋네요!",
+      "배부르고 따뜻해요."
+    ]
+  }
 }

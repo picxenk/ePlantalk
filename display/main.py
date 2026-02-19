@@ -4,6 +4,7 @@ import sys
 import subprocess
 import json
 import urllib.request
+import random
 
 # Ensure library path is correct
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
@@ -61,6 +62,143 @@ def get_sensor_value(endpoint, sensor_ip):
     except Exception as e:
         print(f"Error fetching {endpoint}: {e}")
     return None
+
+def get_message_for_state(moisture, light, config):
+    """
+    Determines the state based on sensor values and returns a random message.
+    """
+    thresholds = config.get('thresholds', {})
+    m_low = thresholds.get('moisture_low', 1.2)
+    m_high = thresholds.get('moisture_high', 2.5)
+    l_bright = thresholds.get('light_bright', 1.5)
+    
+    # Determine Moisture State
+    if moisture < m_low:
+        m_state = "dry"
+    elif moisture < m_high: # Corrected logic: moisture >= m_low AND moisture < m_high
+        m_state = "normal"
+    else:
+        m_state = "wet"
+        
+    # Determine Light State
+    if light < l_bright:
+        l_state = "dark"
+    else:
+        l_state = "bright"
+        
+    state_key = f"{m_state}_{l_state}"
+    # print(f"Current State: {state_key} (Moisture: {moisture}, Light: {light})")
+    
+    messages_dict = config.get('messages', {})
+    messages = messages_dict.get(state_key, [])
+    
+    if not messages:
+        return "..." # Default if no message found
+        
+    return random.choice(messages)
+
+def draw_multiline_text(draw, text, box_width, box_height, font_path):
+    """
+    Draws text centered in the box, automatically wrapping lines and adjusting font size.
+    """
+    if not text:
+        return
+
+    # Start with a large font size and decrease until it fits
+    font_size = 100
+    min_font_size = 20
+    
+    final_lines = []
+    final_font = None
+    final_line_height = 0
+    final_line_spacing = 0
+    
+    lines = [] # Initialize to avoid unbound error
+    font = None
+
+    while font_size >= min_font_size:
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except IOError:
+            font = ImageFont.load_default()
+            # If default font, we can't resize. Just wrap and break.
+            min_font_size = 1000 # Force break loop
+            
+        # Try to wrap text with current font size
+        words = text.split()
+        lines = []
+        current_line = []
+        
+        # Simple word wrap
+        for word in words:
+            # Use current_line + [word] to test length
+            # If empty current_line, just [word]
+            if not current_line:
+                test_line_str = word
+            else:
+                test_line_str = ' '.join(current_line + [word])
+            
+            bbox = draw.textbbox((0, 0), test_line_str, font=font)
+            w = bbox[2] - bbox[0]
+            
+            if w <= box_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                    current_line = [word]
+                else:
+                    # Word itself is too long, just add it
+                    lines.append(word)
+                    current_line = []
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+            
+        # Check total height
+        bbox_sample = draw.textbbox((0, 0), "Tg", font=font)
+        h_line = bbox_sample[3] - bbox_sample[1]
+        line_spacing = int(h_line * 0.2)
+        total_height = len(lines) * h_line + (len(lines) - 1) * line_spacing
+        
+        if total_height <= box_height:
+            # It fits! Save and break.
+            final_lines = lines
+            final_font = font
+            final_line_height = h_line
+            final_line_spacing = line_spacing
+            break
+            
+        font_size -= 5
+    
+    # If loop finished without break (didn't fit even at min size), use min size results (last attempt)
+    if not final_lines:
+        final_lines = lines 
+        final_font = font
+        # If font was never loaded or lines empty (unlikely), set defaults
+        if final_font is None:
+             try:
+                 final_font = ImageFont.truetype(font_path, min_font_size)
+             except:
+                 final_font = ImageFont.load_default()
+        
+        # Recalculate height for fallback
+        bbox_sample = draw.textbbox((0, 0), "Tg", font=final_font)
+        final_line_height = bbox_sample[3] - bbox_sample[1]
+        final_line_spacing = int(final_line_height * 0.2)
+        print("Warning: Text too long to fit perfectly, drawing with minimum size.")
+
+    # Calculate total height for vertical centering
+    total_text_height = len(final_lines) * final_line_height + (len(final_lines) - 1) * final_line_spacing
+    start_y = (box_height - total_text_height) // 2
+    
+    current_y = start_y
+    for line in final_lines:
+        bbox = draw.textbbox((0, 0), line, font=final_font)
+        w = bbox[2] - bbox[0]
+        x = (box_width - w) // 2
+        draw.text((x, current_y), line, font=final_font, fill=0)
+        current_y += final_line_height + final_line_spacing
 
 def main():
     config = load_config()
@@ -179,6 +317,13 @@ def main():
                 x = (display_width - text_w) // 2
                 y = (display_height - text_h) // 2
                 draw.text((x, y), dev_text, font=dev_font, fill=0, align="center")
+            
+            else:
+                # Connected to sensor: Show real message based on state
+                message = get_message_for_state(final_moisture, final_light, config)
+                # Draw multiline text centered
+                draw_multiline_text(draw, message, display_width, display_height, FONT_PATH)
+
 
             if show_log_messages:
                 font = get_font(LOG_FONT_SIZE)
