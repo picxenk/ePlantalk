@@ -1,0 +1,6 @@
+# Ignore local config
+config.json
+
+# Python artifacts
+__pycache__/
+*.pyc
