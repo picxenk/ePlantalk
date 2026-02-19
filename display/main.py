@@ -166,6 +166,18 @@ def main():
                 # Increment dummy values
                 dummy_moisture += 1
                 dummy_light += 1
+                
+                # Show development mode message
+                dev_font = get_font(100)
+                dev_text = "식물의 마음을\n읽을 수 없어요."
+                bbox = draw.textbbox((0, 0), dev_text, font=dev_font)
+                text_w = bbox[2] - bbox[0]
+                text_h = bbox[3] - bbox[1]
+                
+                # Center the text
+                x = (display_width - text_w) // 2
+                y = (display_height - text_h) // 2
+                draw.text((x, y), dev_text, font=dev_font, fill=0, align="center")
 
             font = get_font(LOG_FONT_SIZE)
             text = f"moisture: {final_moisture}, light: {final_light}"
