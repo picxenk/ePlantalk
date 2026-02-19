@@ -179,9 +179,10 @@ graph BT
 *목표: 센서 데이터를 기반으로 식물의 상태를 판단하고 화면을 그립니다.*
 - [ ] **네트워크 설정 (RPi)**
     - [ ] `wpa_supplicant.conf` 구성: 개발용 WiFi(우선순위 높음) + ESP32 AP(우선순위 낮음) 등록
-- [ ] **초기 프로토타입 (Grid & Static Info)**
-    - [ ] `main.py` 작성: 50px 그리드 출력 후 3초 대기 -> "moisture: 0, light: 0" 표시
-    - [ ] Systemd 서비스 파일 작성 (`eplantalk.service`)
+- [x] **초기 프로토타입 (Grid & Static Info)**
+    - [x] `main.py` 작성: 50px 그리드 출력 후 3초 대기 -> "moisture: 0, light: 0" 표시 (7초 간격 업데이트)
+    - [x] Systemd 서비스 파일 작성 (`eplantalk.service`)
+    - [x] WiFi SSID 화면 표시 (우상단, Font 10)
 - [ ] **설정(Config) 및 로직 구현**
     - [ ] `config.json` 작성 (타겟 IP: `192.168.4.1`)
     - [ ] **상태 머신:** 조도 센서 값으로 낮/밤 판단 로직 추가 (NTP 대체)
