@@ -177,8 +177,8 @@ graph BT
 
 ### Step 3: 로직 및 UI 데이터 바인딩
 *목표: 센서 데이터를 기반으로 식물의 상태를 판단하고 화면을 그립니다.*
-- [ ] **네트워크 설정 (RPi)**
-    - [ ] `wpa_supplicant.conf` 구성: 개발용 WiFi(우선순위 높음) + ESP32 AP(우선순위 낮음) 등록
+- [x] **네트워크 설정 (RPi)**
+    - [x] `nmcli` 우선순위 설정: 개발용 WiFi(Priority 100) + ESP32 AP(Priority 50) 설정
 - [x] **초기 프로토타입 (Grid & Static Info)**
     - [x] `main.py` 작성: 50px 그리드 출력 후 3초 대기 -> "moisture: 0, light: 0" 표시 (7초 간격 업데이트)
     - [x] Systemd 서비스 파일 작성 (`eplantalk.service`)
