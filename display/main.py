@@ -1,6 +1,7 @@
 import time
 import os
 import sys
+import subprocess
 
 # Ensure library path is correct
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
@@ -14,6 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 GRID_SIZE = 50
 SMALL_FONT_SIZE = 24
+WIFI_FONT_SIZE = 10
 
 def get_font(size):
     try:
@@ -22,22 +24,15 @@ def get_font(size):
         # Fallback to default if custom font not found
         return ImageFont.load_default()
 
-def draw_grid(draw, width, height, step):
-    """Draws a grid on the image for coordinate checking."""
-    # Vertical lines
-    for x in range(0, width, step):
-        draw.line([(x, 0), (x, height)], fill=0, width=1)
-        # Draw coordinate text every 2 steps to avoid clutter
-        if x % (step * 2) == 0:
-            font = get_font(12)
-            draw.text((x + 2, 2), str(x), font=font, fill=0)
-
-    # Horizontal lines
-    for y in range(0, height, step):
-        draw.line([(0, y), (width, y)], fill=0, width=1)
-        if y % (step * 2) == 0:
-            font = get_font(12)
-            draw.text((2, y + 2), str(y), font=font, fill=0)
+def get_wifi_ssid():
+    try:
+        # iwgetid -r prints only the SSID
+        ssid = subprocess.check_output(['iwgetid', '-r']).decode('utf-8').strip()
+        if not ssid:
+            return "No WiFi"
+        return ssid
+    except Exception:
+        return "WiFi Error"
 
 def main():
     epd = None
@@ -91,6 +86,18 @@ def main():
             
             # Draw at top-left (10, 10)
             draw.text((10, 10), text, font=font, fill=0)
+
+            # Draw WiFi SSID at top-right
+            ssid = get_wifi_ssid()
+            wifi_font = get_font(WIFI_FONT_SIZE)
+            
+            # Calculate text size to align right
+            bbox = draw.textbbox((0, 0), ssid, font=wifi_font)
+            text_w = bbox[2] - bbox[0]
+            # text_h = bbox[3] - bbox[1]
+            
+            x_pos = width - text_w - 10 # 10px margin from right
+            draw.text((x_pos, 10), ssid, font=wifi_font, fill=0)
             
             if epd:
                 epd.display(epd.getbuffer(image))
