@@ -73,6 +73,7 @@ def main():
     display_y_offset = config.get('display_y_offset', 0)
     display_width = config.get('display_width', 1360)
     display_height = config.get('display_height', 480)
+    show_log_messages = config.get('show_log_messages', True)
 
     epd = None
     try:
@@ -179,28 +180,30 @@ def main():
                 y = (display_height - text_h) // 2
                 draw.text((x, y), dev_text, font=dev_font, fill=0, align="center")
 
-            font = get_font(LOG_FONT_SIZE)
-            text = f"moisture: {final_moisture}, light: {final_light}"
-            
-            # Draw at top-left (10, 10)
-            draw.text((10, 10), text, font=font, fill=0)
+            if show_log_messages:
+                font = get_font(LOG_FONT_SIZE)
+                text = f"moisture: {final_moisture}, light: {final_light}"
+                
+                # Draw at top-left (10, 10)
+                draw.text((10, 10), text, font=font, fill=0)
 
-            # Draw WiFi SSID at top-right
-            wifi_font = get_font(LOG_FONT_SIZE)
-            
-            # Calculate text size to align right
-            bbox = draw.textbbox((0, 0), ssid, font=wifi_font)
-            text_w = bbox[2] - bbox[0]
-            # text_h = bbox[3] - bbox[1]
-            
-            x_pos = width - text_w - 10 # 10px margin from right
-            draw.text((x_pos, 10), ssid, font=wifi_font, fill=0)
+                # Draw WiFi SSID at top-right
+                wifi_font = get_font(LOG_FONT_SIZE)
+                
+                # Calculate text size to align right
+                bbox = draw.textbbox((0, 0), ssid, font=wifi_font)
+                text_w = bbox[2] - bbox[0]
+                # text_h = bbox[3] - bbox[1]
+                
+                x_pos = width - text_w - 10 # 10px margin from right
+                draw.text((x_pos, 10), ssid, font=wifi_font, fill=0)
             
             if epd:
                 # Paste canvas onto full image
                 full_image.paste(canvas, (display_x_offset, display_y_offset))
                 epd.display(epd.getbuffer(full_image))
-                print(f"Status updated: {text} (SSID: {ssid}). Sleeping for {update_interval}s...")
+                status_text = text if 'text' in locals() else "no log"
+                print(f"Status updated: {status_text} (SSID: {ssid}). Sleeping for {update_interval}s...")
                 # epd.sleep() # Avoid sleep for fast updates to prevent re-init overhead/flashing
             
             time.sleep(update_interval)

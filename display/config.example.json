@@ -6,5 +6,6 @@
   "display_x_offset": 0,
   "display_y_offset": 0,
   "display_width": 1360,
-  "display_height": 480
+  "display_height": 480,
+  "show_log_messages": true
 }
