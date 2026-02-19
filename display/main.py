@@ -18,8 +18,16 @@ FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 GRID_SIZE = 50
 SMALL_FONT_SIZE = 24
 WIFI_FONT_SIZE = 10
-SENSOR_IP = "192.168.4.1"
-TARGET_SSID_PREFIX = "ePlantalk"
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
+
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        print("Error: config.json not found.")
+        print("Please copy 'config.example.json' to 'config.json' and customize it.")
+        sys.exit(1)
+    
+    with open(CONFIG_FILE, 'r') as f:
+        return json.load(f)
 
 def get_font(size):
     try:
@@ -38,13 +46,13 @@ def get_wifi_ssid():
     except Exception:
         return "WiFi Error"
 
-def get_sensor_value(endpoint):
+def get_sensor_value(endpoint, sensor_ip):
     """
     Fetches sensor data from ESP32.
     Endpoint should be 'moisture' or 'light'.
     Returns the 'value' from JSON or None if failed.
     """
-    url = f"http://{SENSOR_IP}/sensor/{endpoint}"
+    url = f"http://{sensor_ip}/sensor/{endpoint}"
     try:
         with urllib.request.urlopen(url, timeout=2) as response:
             if response.getcode() == 200:
@@ -55,6 +63,11 @@ def get_sensor_value(endpoint):
     return None
 
 def main():
+    config = load_config()
+    sensor_ip = config.get('sensor_ip', '192.168.4.1')
+    target_ssid_prefix = config.get('target_ssid_prefix', 'ePlantalk')
+    update_interval = config.get('update_interval', 7)
+    
     epd = None
     try:
         epd = EPD()
@@ -110,10 +123,10 @@ def main():
             final_light = 0
             
             is_connected_to_sensor = False
-            if TARGET_SSID_PREFIX in ssid:
-                print(f"Connected to {ssid}, fetching sensor data...")
-                m_val = get_sensor_value("moisture")
-                l_val = get_sensor_value("light")
+            if target_ssid_prefix in ssid:
+                print(f"Connected to {ssid}, fetching sensor data from {sensor_ip}...")
+                m_val = get_sensor_value("moisture", sensor_ip)
+                l_val = get_sensor_value("light", sensor_ip)
                 
                 if m_val is not None and l_val is not None:
                     final_moisture = m_val
@@ -149,10 +162,10 @@ def main():
             
             if epd:
                 epd.display(epd.getbuffer(image))
-                print(f"Status updated: {text} (SSID: {ssid}). Sleeping for 7s...")
+                print(f"Status updated: {text} (SSID: {ssid}). Sleeping for {update_interval}s...")
                 # epd.sleep() # Avoid sleep for fast updates to prevent re-init overhead/flashing
             
-            time.sleep(7)
+            time.sleep(update_interval)
 
     except IOError as e:
         print(e)
