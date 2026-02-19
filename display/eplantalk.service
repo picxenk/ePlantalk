@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/ePlantalk/display
-ExecStart=/usr/bin/python3 /home/pi/ePlantalk/display/main.py
+WorkingDirectory=/home/efig/ePlantalk/display
+ExecStart=/usr/bin/python3 /home/efig/ePlantalk/display/main.py
 Restart=always
 RestartSec=10
 
