@@ -2,5 +2,9 @@
   "sensor_ip": "192.168.4.1",
   "target_ssid_prefix": "ePlantalk",
   "update_interval": 7,
-  "plant_name": "My Plant"
+  "plant_name": "My Plant",
+  "display_x_offset": 0,
+  "display_y_offset": 0,
+  "display_width": 1360,
+  "display_height": 480
 }
