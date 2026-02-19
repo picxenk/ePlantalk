@@ -43,9 +43,9 @@ def main():
     epd = None
     try:
         epd = EPD()
-        print("Init and Clear")
+        print("Init...")
         epd.init()
-        epd.Clear()
+        # epd.Clear() # Removed to match test_blink.py behavior and avoid potential hang
 
         width, height = epd.width, epd.height
         
@@ -54,8 +54,23 @@ def main():
         image = Image.new('1', (width, height), 255)  # 255: White
         draw = ImageDraw.Draw(image)
         
-        draw_grid(draw, width, height, GRID_SIZE)
+        # Vertical lines
+        print(f"Drawing vertical lines (step: {GRID_SIZE})...")
+        for x in range(0, width, GRID_SIZE):
+            draw.line([(x, 0), (x, height)], fill=0, width=1)
+            if x % (GRID_SIZE * 2) == 0:
+                font = get_font(12)
+                draw.text((x + 2, 2), str(x), font=font, fill=0)
+
+        # Horizontal lines
+        print(f"Drawing horizontal lines (step: {GRID_SIZE})...")
+        for y in range(0, height, GRID_SIZE):
+            draw.line([(0, y), (width, y)], fill=0, width=1)
+            if y % (GRID_SIZE * 2) == 0:
+                font = get_font(12)
+                draw.text((2, y + 2), str(y), font=font, fill=0)
         
+        print("Sending buffer to display...")
         epd.display(epd.getbuffer(image))
         print("Grid displayed. Waiting 3 seconds...")
         time.sleep(3)
