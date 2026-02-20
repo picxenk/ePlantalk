@@ -5,6 +5,7 @@ import subprocess
 import json
 import urllib.request
 import random
+import socket
 
 # Ensure library path is correct
 lib_path = os.path.join(os.path.dirname(__file__), 'lib')
@@ -43,6 +44,23 @@ def load_config():
     
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
+
+def systemd_notify(message):
+    """Notify systemd using the NOTIFY_SOCKET environment variable."""
+    notify_socket = os.environ.get('NOTIFY_SOCKET')
+    if not notify_socket:
+        return
+    
+    if notify_socket.startswith('@'):
+        notify_socket = '\0' + notify_socket[1:]
+    
+    try:
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        sock.connect(notify_socket)
+        sock.sendall(message.encode('utf-8'))
+        sock.close()
+    except Exception as e:
+        print(f"Failed to notify systemd: {e}")
 
 def get_font_path(font_id):
     """Returns the absolute path for the given font ID."""
@@ -243,6 +261,9 @@ def draw_multiline_text(draw, text, box_width, box_height, font_path):
         current_y += final_line_height + final_line_spacing
 
 def main():
+    # Set global socket timeout for all network operations (including urllib)
+    socket.setdefaulttimeout(10)
+    
     config = load_config()
     sensor_ip = config.get('sensor_ip', '192.168.4.1')
     target_ssid_prefix = config.get('target_ssid_prefix', 'ePlantalk')
@@ -396,6 +417,10 @@ def main():
                 epd.display(epd.getbuffer(full_image))
                 status_text = text if 'text' in locals() else "no log"
                 print(f"Status updated: {status_text} (SSID: {ssid}). Sleeping for {update_interval}s...")
+                
+                # Notify systemd that we are alive
+                systemd_notify("WATCHDOG=1")
+                
                 # epd.sleep() # Avoid sleep for fast updates to prevent re-init overhead/flashing
             
             time.sleep(update_interval)

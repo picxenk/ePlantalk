@@ -7,6 +7,7 @@ Type=simple
 User=efig
 WorkingDirectory=/home/efig/ePlantalk/display
 ExecStart=/usr/bin/python3 /home/efig/ePlantalk/display/main.py
+WatchdogSec=60s
 Restart=always
 RestartSec=10
 
