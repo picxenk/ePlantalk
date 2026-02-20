@@ -15,11 +15,25 @@ from waveshare_epd.epd10in85 import EPD
 from PIL import Image, ImageDraw, ImageFont
 
 # Constants
-FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+SYSTEM_FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FONTS_DIR = os.path.join(PROJECT_ROOT, 'fonts')
+
+FONT_MAP = {
+    1: SYSTEM_FONT_PATH,
+    2: os.path.join(FONTS_DIR, "GmarketSansTTFBold.ttf"),
+    3: os.path.join(FONTS_DIR, "GmarketSansTTFMedium.ttf"),
+    4: os.path.join(FONTS_DIR, "GmarketSansTTFLight.ttf"),
+    5: os.path.join(FONTS_DIR, "RIDIBatang.otf")
+}
+
 GRID_SIZE = 50
 SMALL_FONT_SIZE = 24
 LOG_FONT_SIZE = 10
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
+
+# Global Font Cache
+FONT_CACHE = {}
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -30,9 +44,23 @@ def load_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
-def get_font(size):
+def get_font_path(font_id):
+    """Returns the absolute path for the given font ID."""
+    return FONT_MAP.get(font_id, SYSTEM_FONT_PATH)
+
+def get_font(size, font_path=None):
+    if font_path is None:
+        font_path = SYSTEM_FONT_PATH
+    
+    # Check cache first
+    key = (font_path, size)
+    if key in FONT_CACHE:
+        return FONT_CACHE[key]
+
     try:
-        return ImageFont.truetype(FONT_PATH, size)
+        font = ImageFont.truetype(font_path, size)
+        FONT_CACHE[key] = font
+        return font
     except IOError:
         # Fallback to default if custom font not found
         return ImageFont.load_default()
@@ -65,7 +93,8 @@ def get_sensor_value(endpoint, sensor_ip):
 
 def get_message_for_state(moisture, light, config):
     """
-    Determines the state based on sensor values and returns a random message.
+    Determines the state based on sensor values and returns a random message dictionary.
+    Returns: {'text': str, 'font_id': int}
     """
     thresholds = config.get('thresholds', {})
     m_low = thresholds.get('moisture_low', 1.2)
@@ -92,10 +121,23 @@ def get_message_for_state(moisture, light, config):
     messages_dict = config.get('messages', {})
     messages = messages_dict.get(state_key, [])
     
+    default_font_id = config.get('default_font_id', 1)
+
     if not messages:
-        return "..." # Default if no message found
+        return {"text": "...", "font_id": default_font_id}
         
-    return random.choice(messages)
+    selected = random.choice(messages)
+    
+    # Handle string (legacy) or dict (new) format
+    if isinstance(selected, str):
+        return {"text": selected, "font_id": default_font_id}
+    elif isinstance(selected, dict):
+        return {
+            "text": selected.get("text", "..."), 
+            "font_id": selected.get("font_id", default_font_id)
+        }
+    
+    return {"text": "Format Error", "font_id": default_font_id}
 
 def draw_multiline_text(draw, text, box_width, box_height, font_path):
     """
@@ -284,6 +326,7 @@ def main():
             # Determine values based on SSID
             final_moisture = 0
             final_light = 0
+            text = "" # Initialize text variable safely
             
             is_connected_to_sensor = False
             if target_ssid_prefix in ssid:
@@ -307,30 +350,34 @@ def main():
                 dummy_light += 1
                 
                 # Show development mode message
-                dev_font = get_font(100)
-                dev_text = "식물의 마음을\n읽을 수 없어요."
-                bbox = draw.textbbox((0, 0), dev_text, font=dev_font)
+                dev_font = get_font(100, SYSTEM_FONT_PATH)
+                text = "식물의 마음을\n읽을 수 없어요."
+                bbox = draw.textbbox((0, 0), text, font=dev_font)
                 text_w = bbox[2] - bbox[0]
                 text_h = bbox[3] - bbox[1]
                 
                 # Center the text
                 x = (display_width - text_w) // 2
                 y = (display_height - text_h) // 2
-                draw.text((x, y), dev_text, font=dev_font, fill=0, align="center")
+                draw.text((x, y), text, font=dev_font, fill=0, align="center")
             
             else:
                 # Connected to sensor: Show real message based on state
-                message = get_message_for_state(final_moisture, final_light, config)
+                message_data = get_message_for_state(final_moisture, final_light, config)
+                text = message_data.get('text', '')
+                font_id = message_data.get('font_id', 1)
+                font_path = get_font_path(font_id)
+                
                 # Draw multiline text centered
-                draw_multiline_text(draw, message, display_width, display_height, FONT_PATH)
+                draw_multiline_text(draw, text, display_width, display_height, font_path)
 
 
             if show_log_messages:
                 font = get_font(LOG_FONT_SIZE)
-                text = f"moisture: {final_moisture}, light: {final_light}"
+                log_text = f"moisture: {final_moisture}, light: {final_light}"
                 
                 # Draw at top-left (10, 10)
-                draw.text((10, 10), text, font=font, fill=0)
+                draw.text((10, 10), log_text, font=font, fill=0)
 
                 # Draw WiFi SSID at top-right
                 wifi_font = get_font(LOG_FONT_SIZE)

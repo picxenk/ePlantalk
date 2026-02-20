@@ -3,6 +3,7 @@
   "target_ssid_prefix": "ePlantalk",
   "update_interval": 7,
   "plant_name": "My Plant",
+  "default_font_id": 1,
   "display_x_offset": 0,
   "display_y_offset": 0,
   "display_width": 1360,
@@ -15,16 +16,16 @@
   },
   "messages": {
     "dry_dark": [
-      "목말라요... 그리고 너무 어두워요.",
+      { "text": "목말라요... 그리고 너무 어두워요.", "font_id": 4 },
       "물도 없고 빛도 없고 시무룩..."
     ],
     "dry_bright": [
-      "햇살은 좋은데 목이 너무 말라요!",
+      { "text": "햇살은 좋은데 목이 너무 말라요!", "font_id": 2 },
       "물 좀 주세요, 말라가고 있어요."
     ],
     "normal_dark": [
       "수분은 적당한데 좀 어둡네요.",
-      "지금 자는 시간인가요?"
+      { "text": "지금 자는 시간인가요?", "font_id": 5 }
     ],
     "normal_bright": [
       "아주 쾌적해요! 기분 최고!",
