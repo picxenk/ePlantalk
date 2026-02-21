@@ -1,6 +1,6 @@
 esphome:
-  name: eplantalk03
-  friendly_name: ePlantalk 03
+  name: eplantalk99
+  friendly_name: ePlantalk 99
   platformio_options:
     board_build.flash_mode: dio
 
@@ -37,9 +37,9 @@ api:
 
 wifi:
   ap:
-    ssid: "ePlantalk03"
+    ssid: "ePlantalk99"
     password: "12345678"
-    channel: 11       # 1 6 11 1 6 번갈아
+    channel: 6       # 1 6 11 1 6 -- 번갈아
     ap_timeout: 0s   # 항상 AP 유지
 
   power_save_mode: none
