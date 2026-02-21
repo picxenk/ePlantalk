@@ -37,13 +37,43 @@ CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
 FONT_CACHE = {}
 
 def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        print("Error: config.json not found.")
-        print("Please copy 'config.example.json' to 'config.json' and customize it.")
-        sys.exit(1)
+    """
+    Loads configuration by merging 'config.json' (base) and 'config_{hostname}.json' (overlay).
+    """
+    base_config = {}
     
-    with open(CONFIG_FILE, 'r') as f:
-        return json.load(f)
+    # 1. Load Base Config
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as f:
+            base_config = json.load(f)
+    else:
+        print("Warning: Base 'config.json' not found. Using defaults.")
+    
+    # 2. Determine Hostname
+    hostname = socket.gethostname()
+    host_config_file = os.path.join(os.path.dirname(__file__), f'config_{hostname}.json')
+    
+    # 3. Load Host Specific Config
+    if os.path.exists(host_config_file):
+        print(f"Loading host-specific config: {host_config_file}")
+        with open(host_config_file, 'r') as f:
+            host_config = json.load(f)
+            # Merge host_config into base_config (Deep merge for 'messages' dict)
+            deep_merge(base_config, host_config)
+    else:
+        print(f"No host-specific config found for {hostname}. Using base config only.")
+        
+    return base_config
+
+def deep_merge(base, overlay):
+    """
+    Recursively merges overlay dict into base dict.
+    """
+    for key, value in overlay.items():
+        if isinstance(value, dict) and key in base and isinstance(base[key], dict):
+            deep_merge(base[key], value)
+        else:
+            base[key] = value
 
 def systemd_notify(message):
     """Notify systemd using the NOTIFY_SOCKET environment variable."""
