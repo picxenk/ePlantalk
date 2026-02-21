@@ -380,7 +380,20 @@ def main():
             text = "" # Initialize text variable safely
             
             is_connected_to_sensor = False
-            if target_ssid_prefix in ssid:
+            
+            # Check target SSID (exact match first, then prefix)
+            target_ssid = config.get('target_ssid')
+            target_ssid_prefix = config.get('target_ssid_prefix')
+            
+            is_match = False
+            if target_ssid:
+                if ssid == target_ssid:
+                    is_match = True
+            elif target_ssid_prefix:
+                if target_ssid_prefix in ssid:
+                    is_match = True
+            
+            if is_match:
                 print(f"Connected to {ssid}, fetching sensor data from {sensor_ip}...")
                 m_val = get_sensor_value("moisture", sensor_ip)
                 l_val = get_sensor_value("light", sensor_ip)
