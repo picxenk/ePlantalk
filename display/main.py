@@ -305,6 +305,7 @@ def main():
     display_width = config.get('display_width', 1360)
     display_height = config.get('display_height', 480)
     show_log_messages = config.get('show_log_messages', True)
+    rotation = config.get('rotation', 0) # 0 or 180
 
     epd = None
     try:
@@ -457,6 +458,11 @@ def main():
             if epd:
                 # Paste canvas onto full image
                 full_image.paste(canvas, (display_x_offset, display_y_offset))
+                
+                # Apply rotation if needed
+                if rotation == 180:
+                    full_image = full_image.rotate(180)
+                
                 epd.display(epd.getbuffer(full_image))
                 status_text = text if 'text' in locals() else "no log"
                 print(f"Status updated: {status_text} (SSID: {ssid}). Sleeping for {update_interval}s...")

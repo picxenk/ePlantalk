@@ -8,6 +8,7 @@
   "display_y_offset": 0,
   "display_width": 1360,
   "display_height": 480,
+  "rotation": 0,
   "show_log_messages": true,
   "thresholds": {
     "moisture_low": 0.3,
