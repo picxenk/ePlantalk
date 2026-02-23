@@ -183,9 +183,10 @@ graph BT
     - [x] `main.py` 작성: 50px 그리드 출력 후 3초 대기 -> "moisture: 0, light: 0" 표시 (7초 간격 업데이트)
     - [x] Systemd 서비스 파일 작성 (`eplantalk.service`)
     - [x] WiFi SSID 화면 표시 (우상단, Font 10)
-- [x] **설정(Config) 및 로직 구현**
+    - [x] **설정(Config) 및 로직 구현**
     - [x] `config.json` 작성 (타겟 IP: `192.168.4.1`)
-    - [ ] **상태 머신:** 조도 센서 값으로 낮/밤 판단 로직 추가 (NTP 대체)
+        - [x] 호스트별 설정(`config_{hostname}.json`) 오버라이딩 기능 구현
+    - [x] **상태 머신:** 조도 센서 값으로 낮/밤 판단 로직 추가 (NTP 대체)
     - [x] `dialogues.json`: 상태별 대사 DB 구축 (`config.json` 통합)
 - [x] **UI 렌더링 엔진 개발**
     - [x] **Canvas:** E-ink 해상도 맞춤 1-bit 캔버스 생성
