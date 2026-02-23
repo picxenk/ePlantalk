@@ -406,25 +406,45 @@ def main():
                 else:
                     print("Failed to fetch sensor data, using dummy values.")
             
+            is_simulating = False
+            
             if not is_connected_to_sensor:
-                print("Using dummy values (incrementing).")
-                final_moisture = dummy_moisture
-                final_light = dummy_light
-                # Increment dummy values
+                # Increment dummy values (acts as a counter for connection failures)
                 dummy_moisture += 1
                 dummy_light += 1
                 
-                # Show development mode message
-                dev_font = get_font(100, SYSTEM_FONT_PATH)
-                text = "식물의 마음을\n읽을 수 없어요."
-                bbox = draw.textbbox((0, 0), text, font=dev_font)
-                text_w = bbox[2] - bbox[0]
-                text_h = bbox[3] - bbox[1]
-                
-                # Center the text
-                x = (display_width - text_w) // 2
-                y = (display_height - text_h) // 2
-                draw.text((x, y), text, font=dev_font, fill=0, align="center")
+                if dummy_moisture > 5:
+                    print(f"Connection failed count {dummy_moisture}. Entering Demo Mode (Simulating normal_bright).")
+                    is_simulating = True
+                    
+                    # Force values to trigger 'normal_bright' state
+                    # Based on config: normal (0.3 ~ 1.5), bright (> 1.5)
+                    final_moisture = 0.8
+                    final_light = 2.0
+                    
+                    # Reuse standard message logic
+                    message_data = get_message_for_state(final_moisture, final_light, config)
+                    text = message_data.get('text', '')
+                    font_id = message_data.get('font_id', 1)
+                    font_path = get_font_path(font_id)
+                    
+                    draw_multiline_text(draw, text, display_width, display_height, font_path)
+                else:
+                    print("Using dummy values (incrementing).")
+                    final_moisture = dummy_moisture
+                    final_light = dummy_light
+                    
+                    # Show development mode message
+                    dev_font = get_font(100, SYSTEM_FONT_PATH)
+                    text = "식물의 마음을\n읽을 수 없어요."
+                    bbox = draw.textbbox((0, 0), text, font=dev_font)
+                    text_w = bbox[2] - bbox[0]
+                    text_h = bbox[3] - bbox[1]
+                    
+                    # Center the text
+                    x = (display_width - text_w) // 2
+                    y = (display_height - text_h) // 2
+                    draw.text((x, y), text, font=dev_font, fill=0, align="center")
             
             else:
                 # Connected to sensor: Show real message based on state
@@ -439,7 +459,11 @@ def main():
 
             if show_log_messages:
                 font = get_font(LOG_FONT_SIZE)
-                log_text = f"moisture: {final_moisture}, light: {final_light}"
+                
+                if is_simulating:
+                    log_text = f"simulating ({dummy_moisture})"
+                else:
+                    log_text = f"moisture: {final_moisture}, light: {final_light}"
                 
                 # Draw at top-left (10, 10)
                 draw.text((10, 10), log_text, font=font, fill=0)
