@@ -187,6 +187,7 @@ graph BT
     - [x] `config.json` 작성 (타겟 IP: `192.168.4.1`)
         - [x] 호스트별 설정(`config_{hostname}.json`) 오버라이딩 기능 구현
     - [x] **상태 머신:** 조도 센서 값으로 낮/밤 판단 로직 추가 (NTP 대체)
+    - [x] **데모 모드:** 센서 연결 실패 5회 이상 시 'normal_bright' 상태 시뮬레이션 및 로그 표시
     - [x] `dialogues.json`: 상태별 대사 DB 구축 (`config.json` 통합)
 - [x] **UI 렌더링 엔진 개발**
     - [x] **Canvas:** E-ink 해상도 맞춤 1-bit 캔버스 생성
