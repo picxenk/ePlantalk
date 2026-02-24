@@ -1,0 +1,76 @@
+esphome:
+  name: eplantalk-single
+  friendly_name: ePlantalk Single Node
+  includes:
+    - common_headers.h
+  platformio_options:
+    board_build.flash_mode: dio
+  
+  on_boot:
+    priority: -10
+    then:
+      - lambda: |-
+          esp_wifi_softap_set_max_conn(10);
+          ESP_LOGI("custom_wifi", "AP Max connections set to 10 via on_boot");
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+# 안정성 관련
+logger:
+  level: WARN
+# Enable logging
+# logger:
+#   hardware_uart: USB_SERIAL_JTAG
+#   level: DEBUG
+
+api:
+  reboot_timeout: 0s
+
+wifi:
+  ap:
+    ssid: "ePlantalkSingle"
+    password: "12345678"
+    channel: 1       # 1 6 11 1 6 번갈아
+    ap_timeout: 0s   # 항상 AP 유지
+  
+  power_save_mode: none
+  output_power: 15dB  # 다중 접속 안정성을 위해 출력 상향 (기존 9dB -> 15dB)
+
+  manual_ip:
+    static_ip: 192.168.4.1
+    gateway: 192.168.4.1
+    subnet: 255.255.255.0
+
+
+web_server:
+  port: 80
+  version: 3
+  include_internal: true
+  local: true
+
+sensor:
+  - platform: adc
+    pin: GPIO3
+    name: "moisture"
+    id: moisture_sensor
+    attenuation: 12db
+    update_interval: 5s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+
+  - platform: adc
+    pin: GPIO1
+    name: "light"
+    id: light_sensor
+    attenuation: 12db
+    update_interval: 5s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
